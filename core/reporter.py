@@ -12,8 +12,13 @@ class Reporter:
         out_path = os.path.join(self.output_dir, file_name)
         
         try:
-            with open(out_path, "w") as f:
-                json.dump(result.model_dump(), f, indent=4)
+            # Convert the Pydantic model to a standard Python dictionary
+            data_to_save = result.model_dump()
+            
+            with open(out_path, "w", encoding="utf-8") as f:
+                json.dump(data_to_save, f, indent=4)
+                
             print(f"[+] Report saved successfully to: {out_path}")
+            
         except Exception as e:
             print(f"[-] Failed to save report: {e}")
