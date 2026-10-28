@@ -1,5 +1,5 @@
 yara-python
-pydantic
+pydantic>=2.0
 pycryptodome
 pefile
 pythonnet
