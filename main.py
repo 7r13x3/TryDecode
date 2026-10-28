@@ -2,6 +2,7 @@ import sys
 from core.yara_scanner import YaraScanner
 from extractors.xworm import XWormExtractor
 from extractors.asyncrat import AsyncRatExtractor
+from extractors.quasarrat import QuasarRatExtractor
 from preprocessors.upx import UPXUnpacker
 
 def main(file_path):
@@ -19,30 +20,28 @@ def main(file_path):
 
     print(f"[+] Detected Families: {', '.join(matches)}")
 
+    result = None
+
     if "XWorm_Generic" in matches:
         print("[*] Launching XWorm Extractor...")
         extractor = XWormExtractor(processed_file)
         result = extractor.extract()
-        
-        if result:
-            print("\n[+] Extraction Successful!")
-            print(result.model_dump_json(indent=4))
-        else:
-            print("[-] Failed to extract XWorm configuration.")
             
     elif "AsyncRAT_Generic" in matches:
         print("[*] Launching AsyncRAT Extractor...")
         extractor = AsyncRatExtractor(processed_file)
         result = extractor.extract()
-        
-        if result:
-            print("\n[+] Extraction Successful!")
-            print(result.model_dump_json(indent=4))
-        else:
-            print("[-] Failed to extract AsyncRAT configuration.")
             
+    elif "QuasarRAT_Generic" in matches:
+        print("[*] Launching QuasarRAT Extractor...")
+        extractor = QuasarRatExtractor(processed_file)
+        result = extractor.extract()
+
+    if result:
+        print("\n[+] Extraction Successful!")
+        print(result.model_dump_json(indent=4))
     else:
-        print("[!] Extractor for this family is not built yet.")
+        print("[-] Failed to extract configuration or extractor not built.")
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
