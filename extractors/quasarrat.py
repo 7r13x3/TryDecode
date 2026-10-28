@@ -1,3 +1,4 @@
+import os
 import base64
 import hashlib
 from Crypto.Cipher import AES
@@ -5,9 +6,17 @@ from Crypto.Util.Padding import unpad
 from core.maco_model import ExtractorModel, NetworkConfig
 
 try:
+    import clr
+    root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    dll_path = os.path.join(root_dir, "dnlib.dll")
+    if os.path.exists(dll_path):
+        clr.AddReference(dll_path)
+    else:
+        print("[-] CRITICAL: dnlib.dll not found in the root directory.")
     from dnlib.DotNet import ModuleDefMD
 except ImportError:
     ModuleDefMD = None
+    print("[-] Warning: pythonnet or dnlib not found. Extractor disabled.")
 
 class QuasarRatExtractor:
     def __init__(self, file_path):
