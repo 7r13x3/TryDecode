@@ -5,6 +5,7 @@ from extractors.xworm import XWormExtractor
 from extractors.asyncrat import AsyncRatExtractor
 from extractors.quasarrat import QuasarRatExtractor
 from extractors.redline import RedLineExtractor
+from extractors.njrat import NjratExtractor
 from preprocessors.upx import UPXUnpacker
 
 def main(file_path):
@@ -36,9 +37,13 @@ def main(file_path):
         print("[*] Launching QuasarRAT Extractor...")
         result = QuasarRatExtractor(processed_file).extract()
 
-    elif "RedLine" in matches or "RedLine_Generic" in matches:
+    elif "RedLine_Generic" in matches:
         print("[*] Launching RedLine Extractor...")
         result = RedLineExtractor(processed_file).extract()
+
+    elif "njRAT_Generic" in matches:
+        print("[*] Launching njRAT Extractor...")
+        result = NjratExtractor(processed_file).extract()
 
     if result:
         print("\n[+] Extraction Successful!")
