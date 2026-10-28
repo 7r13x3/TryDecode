@@ -6,10 +6,16 @@ from core.maco_model import ExtractorModel, NetworkConfig
 
 try:
     import clr
+    root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    dll_path = os.path.join(root_dir, "dnlib.dll")
+    if os.path.exists(dll_path):
+        clr.AddReference(dll_path)
+    else:
+        print("[-] CRITICAL: dnlib.dll not found in the root directory.")
     from dnlib.DotNet import ModuleDefMD
 except ImportError:
-    clr = None
-    print("[-] Warning: pythonnet or dnlib not found. XWorm Extractor will be disabled.")
+    ModuleDefMD = None
+    print("[-] Warning: pythonnet or dnlib not found. Extractor disabled.")
 
 class XWormExtractor:
     def __init__(self, file_path):
@@ -40,12 +46,11 @@ class XWormExtractor:
             cipher = AES.new(bytes(self.aes_key), AES.MODE_ECB)
             plaintext = cipher.decrypt(base64.b64decode(encrypted_b64))
             return "".join(chr(i) for i in plaintext if chr(i).isprintable())
-        except:
+        except Exception:
             return encrypted_b64
 
     def _extract_settings(self):
         target_type = None
-        
         for mtype in self.module.GetTypes():
             if "Settings" in str(mtype.Name):
                 target_type = mtype
@@ -65,7 +70,7 @@ class XWormExtractor:
         for constructor in constructors:
             if constructor.HasBody:
                 ins = constructor.Body.Instructions
-                for i in range(len(ins)):
+                for i in range(len(ins) - 1):
                     if "ldstr" in str(ins[i]) and "stsfld" in str(ins[i+1]):
                         field_name = str(ins[i+1]).split("::")[-1]
                         value = str(ins[i]).split(" ")[-1].strip('"')
@@ -101,5 +106,4 @@ class XWormExtractor:
             network=[NetworkConfig(host=host, port=port, protocol="TCP")] if host else [],
             raw_config=decrypted_config
         )
-        
         return result
