@@ -1,3 +1,6 @@
+<div align="center">
+  <img src="assets/fucking_rat.png" width="400">
+</div>
 # TryDecode
 
 **Automated configuration extraction and C2 traffic decryption for modern RAT families.**
