@@ -14,7 +14,7 @@ rule XWorm_Generic {
         $s7 = "RunAntiAnalysis" ascii wide
 
     condition:
-        uint16(0) == 0x5A4D and // Must be a Windows PE file (MZ header)
+        uint16(0) == 0x5A4D and
         filesize < 10MB and
         4 of them
 }
