@@ -1,18 +1,30 @@
+import os
 import re
 import base64
 import json
 from core.maco_model import ExtractorModel, NetworkConfig
 
 try:
+    import clr
+    root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    dll_path = os.path.join(root_dir, "dnlib.dll")
+    if os.path.exists(dll_path):
+        clr.AddReference(dll_path)
+    else:
+        print("[-] CRITICAL: dnlib.dll not found in the root directory.")
     from dnlib.DotNet import ModuleDefMD
 except ImportError:
     ModuleDefMD = None
+    print("[-] Warning: pythonnet or dnlib not found. Extractor disabled.")
 
 class RedLineExtractor:
     def __init__(self, file_path):
         self.file_path = file_path
 
     def extract(self):
+        if not ModuleDefMD:
+            return None
+
         try:
             module = ModuleDefMD.Load(self.file_path)
         except Exception:
