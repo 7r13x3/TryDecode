@@ -7,22 +7,29 @@ TryDecode is a modular malware analysis framework designed to automate the triag
 ## Features
 - **YARA Triage:** Automatically identifies the malware family before analysis.
 - **Static .NET Extraction:** Uses `dnlib` to safely extract and decrypt settings (Mutex, C2, Ports) from .NET assemblies without executing them.
-- **MACO Standardized Output:** Outputs extracted configs in a JSON format compatible with enterprise pipelines.
+- **Automatic Unpacking:** Detects UPX-packed samples and unpacks them before analysis.
+- **MACO Standardized Output:** Outputs extracted configs in a clean JSON format.
 
 ## Supported Families
-- [x] XWorm (Static Config Extraction)
-- [ ] AsyncRAT (In Progress)
-- [ ] QuasarRAT (Planned)
+- [x] XWorm (AES-ECB)
+- [x] AsyncRAT (AES-256-CBC)
+- [x] DcRAT (AsyncRAT Fork)
+- [x] VenomRAT (AsyncRAT Fork)
+- [x] QuasarRAT (AES-256-CBC)
+- [x] RedLine Stealer (Base64 JSON Config)
 
 ## Setup Instructions
 
 1. Install the required Python libraries:
    `pip install -r requirements.txt`
 
-2. Download `dnlib.dll`:
-   The XWorm extractor relies on `dnlib` to parse .NET assemblies. You must download `dnlib.dll` (e.g., from the official dnlib GitHub releases or NuGet) and place it in the root directory of this project.
+2. Download Required Binaries:
+   - **dnlib.dll**: Required for .NET parsing. Place it in the root directory.
+   - **upx.exe**: Required for unpacking UPX samples. Place it in the root directory.
 
 ## Usage
 
 Run the main orchestrator script against a malware sample:
 `python main.py path/to/sample.exe`
+
+All extracted reports will be saved automatically to the `reports/` folder.
