@@ -5,11 +5,9 @@ from Crypto.Util.Padding import unpad
 from core.maco_model import ExtractorModel, NetworkConfig
 
 try:
-    import clr
     from dnlib.DotNet import ModuleDefMD
 except ImportError:
-    clr = None
-    print("[-] Warning: pythonnet or dnlib not found. AsyncRAT Extractor will be disabled.")
+    ModuleDefMD = None
 
 class AsyncRatExtractor:
     def __init__(self, file_path):
@@ -26,18 +24,27 @@ class AsyncRatExtractor:
             print(f"[-] Failed to load .NET assembly: {e}")
             return False
 
-    def _decrypt_value(self, encrypted_b64):
+    def _derive_key(self, b64_key):
+        try:
+            decoded = base64.b64decode(b64_key)
+            return hashlib.sha256(decoded).digest()
+        except Exception:
+            return None
+
+    def _decrypt(self, b64_data):
+        if not self.aes_key:
+            return b64_data
         try:
             cipher = AES.new(self.aes_key, AES.MODE_CBC, iv=b'\x00'*16)
-            plaintext = cipher.decrypt(base64.b64decode(encrypted_b64))
-            return unpad(plaintext, AES.block_size).decode('utf-8', errors='ignore')
+            decrypted = cipher.decrypt(base64.b64decode(b64_data))
+            return unpad(decrypted, AES.block_size).decode('utf-8', errors='ignore')
         except Exception:
-            return encrypted_b64
+            return b64_data
 
     def _extract_settings(self):
         target_type = None
         for mtype in self.module.GetTypes():
-            if mtype.Name == "Settings":
+            if "Settings" in str(mtype.Name):
                 target_type = mtype
                 break
         
@@ -53,37 +60,27 @@ class AsyncRatExtractor:
                         field_name = str(ins[i+1]).split("::")[-1]
                         value = str(ins[i]).split(" ")[-1].strip('"')
                         
-                        if field_name == "Key":
-                            decoded_key = base64.b64decode(value)
-                            self.aes_key = hashlib.sha256(decoded_key).digest()
+                        if field_name == "Key" or field_name == "AuthKey":
+                            self.aes_key = self._derive_key(value)
                         else:
                             self.config_dict[field_name] = value
         return True
 
     def extract(self):
-        if not self._load_assembly():
-            return None
-
-        if not self._extract_settings():
-            print("[-] Could not locate AsyncRAT Settings class.")
+        if not self._load_assembly() or not self._extract_settings():
             return None
 
         decrypted_config = {}
         for key, val in self.config_dict.items():
-            decrypted_config[key] = self._decrypt_value(val)
+            decrypted_config[key] = self._decrypt(val)
 
-        hosts_str = decrypted_config.get("Hosts", "")
-        ports_str = decrypted_config.get("Ports", "")
-        
-        host = hosts_str.split(",")[0] if hosts_str else None
-        port_str = ports_str.split(",")[0] if ports_str else None
-        port = int(port_str) if port_str and port_str.isdigit() else None
+        host = decrypted_config.get("Hosts", "").split(",")[0]
+        port_str = decrypted_config.get("Ports", "").split(",")[0]
+        port = int(port_str) if port_str.isdigit() else None
 
-        result = ExtractorModel(
-            family="AsyncRAT",
+        return ExtractorModel(
+            family="AsyncRAT/Venom/DcRAT",
             network=[NetworkConfig(host=host, port=port, protocol="TCP")] if host else [],
             mutex=decrypted_config.get("Mutex"),
             raw_config=decrypted_config
         )
-        
-        return result
