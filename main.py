@@ -4,6 +4,7 @@ from core.reporter import Reporter
 from extractors.xworm import XWormExtractor
 from extractors.asyncrat import AsyncRatExtractor
 from extractors.quasarrat import QuasarRatExtractor
+from extractors.redline import RedLineExtractor
 from preprocessors.upx import UPXUnpacker
 
 def main(file_path):
@@ -25,25 +26,19 @@ def main(file_path):
 
     if "XWorm_Generic" in matches:
         print("[*] Launching XWorm Extractor...")
-        extractor = XWormExtractor(processed_file)
-        result = extractor.extract()
+        result = XWormExtractor(processed_file).extract()
             
-    elif "AsyncRAT_Generic" in matches:
-        print("[*] Launching AsyncRAT Extractor...")
-        extractor = AsyncRatExtractor(processed_file)
-        result = extractor.extract()
-
-    elif "DcRAT_Generic" in matches or "VenomRAT_Generic" in matches:
-        print("[*] Launching AsyncRAT Extractor for DcRAT/VenomRAT...")
-        extractor = AsyncRatExtractor(processed_file)
-        result = extractor.extract()
-        if result:
-            result.family = "DcRAT/VenomRAT"
+    elif any(x in matches for x in ["AsyncRAT_Generic", "DcRAT_Generic", "VenomRAT_Generic"]):
+        print("[*] Launching AsyncRAT Family Extractor...")
+        result = AsyncRatExtractor(processed_file).extract()
             
     elif "QuasarRAT_Generic" in matches:
         print("[*] Launching QuasarRAT Extractor...")
-        extractor = QuasarRatExtractor(processed_file)
-        result = extractor.extract()
+        result = QuasarRatExtractor(processed_file).extract()
+
+    elif "RedLine" in matches or "RedLine_Generic" in matches:
+        print("[*] Launching RedLine Extractor...")
+        result = RedLineExtractor(processed_file).extract()
 
     if result:
         print("\n[+] Extraction Successful!")
