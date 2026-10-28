@@ -22,16 +22,22 @@ class UPXUnpacker:
         if not self.is_upx_packed():
             return self.file_path
             
-        if not os.path.exists(self.upx_path):
-            print(f"[-] Warning: {self.upx_path} not found. Skipping unpacking.")
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        project_root = os.path.dirname(script_dir)
+        local_upx = os.path.join(project_root, "upx.exe")
+        
+        if not os.path.exists(local_upx) and not os.path.exists(self.upx_path):
+            print(f"[-] Warning: upx.exe not found in root directory. Skipping unpacking.")
             return self.file_path
+
+        executable = local_upx if os.path.exists(local_upx) else self.upx_path
 
         try:
             temp_dir = tempfile.gettempdir()
             output_path = os.path.join(temp_dir, "unpacked_" + os.path.basename(self.file_path))
             
             print(f"[*] UPX detected. Unpacking to temporary file...")
-            subprocess.run([self.upx_path, "-d", self.file_path, "-o", output_path], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            subprocess.run([executable, "-d", self.file_path, "-o", output_path], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             print(f"[+] Successfully unpacked.")
             return output_path
             
