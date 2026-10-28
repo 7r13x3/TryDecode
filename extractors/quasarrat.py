@@ -5,10 +5,9 @@ from Crypto.Util.Padding import unpad
 from core.maco_model import ExtractorModel, NetworkConfig
 
 try:
-    import clr
     from dnlib.DotNet import ModuleDefMD
 except ImportError:
-    clr = None
+    ModuleDefMD = None
 
 class QuasarRatExtractor:
     def __init__(self, file_path):
@@ -21,19 +20,16 @@ class QuasarRatExtractor:
         try:
             self.module = ModuleDefMD.Load(self.file_path)
             return True
-        except Exception as e:
-            print(f"[-] Failed to load .NET assembly: {e}")
+        except Exception:
             return False
 
-    def _decrypt_value(self, encrypted_b64):
-        if not self.aes_key:
-            return encrypted_b64
+    def _decrypt(self, b64_data):
         try:
             cipher = AES.new(self.aes_key, AES.MODE_CBC, iv=b'\x00'*16)
-            plaintext = cipher.decrypt(base64.b64decode(encrypted_b64))
-            return unpad(plaintext, AES.block_size).decode('utf-8', errors='ignore')
+            decrypted = cipher.decrypt(base64.b64decode(b64_data))
+            return unpad(decrypted, AES.block_size).decode('utf-8', errors='ignore')
         except Exception:
-            return encrypted_b64
+            return b64_data
 
     def _extract_settings(self):
         target_type = None
@@ -55,36 +51,25 @@ class QuasarRatExtractor:
                         value = str(ins[i]).split(" ")[-1].strip('"')
                         
                         if field_name == "Key":
-                            decoded_key = base64.b64decode(value)
-                            self.aes_key = hashlib.sha256(decoded_key).digest()[:16]
+                            self.aes_key = hashlib.sha256(base64.b64decode(value)).digest()[:16]
                         else:
                             self.config_dict[field_name] = value
         return True
 
     def extract(self):
-        if not self._load_assembly():
-            return None
-
-        if not self._extract_settings():
-            print("[-] Could not locate QuasarRAT Settings class.")
+        if not self._load_assembly() or not self._extract_settings():
             return None
 
         decrypted_config = {}
         for key, val in self.config_dict.items():
-            decrypted_config[key] = self._decrypt_value(val)
+            decrypted_config[key] = self._decrypt(val) if self.aes_key else val
 
-        hosts_str = decrypted_config.get("Hosts", "")
-        ports_str = decrypted_config.get("Ports", "")
-        
-        host = hosts_str.split(",")[0] if hosts_str else None
-        port_str = ports_str.split(",")[0] if ports_str else None
-        port = int(port_str) if port_str and port_str.isdigit() else None
+        hosts = decrypted_config.get("Hosts", "")
+        ports = decrypted_config.get("Ports", "")
 
-        result = ExtractorModel(
+        return ExtractorModel(
             family="QuasarRAT",
-            network=[NetworkConfig(host=host, port=port, protocol="TCP")] if host else [],
+            network=[NetworkConfig(host=hosts.split(",")[0], port=int(ports.split(",")[0]))] if hosts and ports else [],
             mutex=decrypted_config.get("Mutex"),
             raw_config=decrypted_config
         )
-        
-        return result
