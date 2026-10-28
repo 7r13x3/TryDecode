@@ -8,7 +8,6 @@ class YaraScanner:
         self._compile_rules()
 
     def _compile_rules(self):
-        # Load all .yar files from the rules folder
         try:
             filepaths = {}
             if os.path.exists(self.rules_dir):
@@ -25,7 +24,6 @@ class YaraScanner:
             return []
         try:
             matches = self.rules.match(file_path)
-            # Return a list of rule names that matched
             return [match.rule for match in matches]
         except Exception as e:
             print(f"[-] Error scanning file: {e}")
