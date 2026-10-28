@@ -1,0 +1,14 @@
+# Malware Samples - NEVER COMMIT THESE
+*.exe
+*.dll
+*.bin
+*.jar
+*.pcap
+samples/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.env
