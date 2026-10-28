@@ -1,0 +1,6 @@
+yara-python
+pydantic
+pycryptodome
+pefile
+pythonnet
+requests
