@@ -6,17 +6,21 @@ TryDecode is a modular malware analysis framework designed to automate the triag
 
 ## Features
 - **YARA Triage:** Automatically identifies the malware family before analysis.
-- **Static .NET Extraction:** Uses `dnlib` to safely extract and decrypt settings (Mutex, C2, Ports) from .NET assemblies without executing them.
+- **Static Extraction:** Uses `dnlib` for .NET assemblies and Regex for legacy binaries.
 - **Automatic Unpacking:** Detects UPX-packed samples and unpacks them before analysis.
-- **MACO Standardized Output:** Outputs extracted configs in a clean JSON format.
+- **Professional CLI:** Interactive command-line interface for scanning, extracting, and unpacking.
+- **JSON Reporting:** Saves extracted configs in a clean JSON format in the `reports/` folder.
 
 ## Supported Families
-- [x] XWorm (AES-ECB)
-- [x] AsyncRAT (AES-256-CBC)
-- [x] DcRAT (AsyncRAT Fork)
-- [x] VenomRAT (AsyncRAT Fork)
-- [x] QuasarRAT (AES-256-CBC)
-- [x] RedLine Stealer (Base64 JSON Config)
+- [x] XWorm
+- [x] AsyncRAT
+- [x] DcRAT
+- [x] VenomRAT
+- [x] QuasarRAT
+- [x] RedLine Stealer
+- [x] njRAT
+- [x] DarkComet
+- [x] Remcos
 
 ## Setup Instructions
 
@@ -29,7 +33,13 @@ TryDecode is a modular malware analysis framework designed to automate the triag
 
 ## Usage
 
-Run the main orchestrator script against a malware sample:
-`python main.py path/to/sample.exe`
+TryDecode uses a subcommand-based CLI.
 
-All extracted reports will be saved automatically to the `reports/` folder.
+**Scan a file (YARA only):**
+`python cli.py scan path/to/sample.exe`
+
+**Extract configuration (Unpack -> YARA -> Extract -> Save Report):**
+`python cli.py extract path/to/sample.exe`
+
+**Unpack a UPX-packed file only:**
+`python cli.py unpack path/to/sample.exe`
