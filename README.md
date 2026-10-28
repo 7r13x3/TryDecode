@@ -1,9 +1,12 @@
 <div align="center">
-  <img src="assets/fucking_rat.png" width="400">
+  <img src="assets/fucking_rat.png" width="220" alt="TryDecode Logo">
+  
+  <h1>TryDecode</h1>
+  
+  <p><b>Automated configuration extraction and C2 traffic decryption for modern RAT families.</b></p>
 </div>
-# TryDecode
 
-**Automated configuration extraction and C2 traffic decryption for modern RAT families.**
+---
 
 TryDecode is a modular malware analysis framework designed to automate the triage, static configuration extraction, and network traffic decryption of modern Remote Access Trojans (RATs).
 
@@ -28,21 +31,5 @@ TryDecode is a modular malware analysis framework designed to automate the triag
 ## Setup Instructions
 
 1. Install the required Python libraries:
-   `pip install -r requirements.txt`
-
-2. Download Required Binaries:
-   - **dnlib.dll**: Required for .NET parsing. Place it in the root directory.
-   - **upx.exe**: Required for unpacking UPX samples. Place it in the root directory.
-
-## Usage
-
-TryDecode uses a subcommand-based CLI.
-
-**Scan a file (YARA only):**
-`python cli.py scan path/to/sample.exe`
-
-**Extract configuration (Unpack -> YARA -> Extract -> Save Report):**
-`python cli.py extract path/to/sample.exe`
-
-**Unpack a UPX-packed file only:**
-`python cli.py unpack path/to/sample.exe`
+   ```bash
+   pip install -r requirements.txt
