@@ -1,5 +1,6 @@
 import sys
 from core.yara_scanner import YaraScanner
+from core.reporter import Reporter
 from extractors.xworm import XWormExtractor
 from extractors.asyncrat import AsyncRatExtractor
 from extractors.quasarrat import QuasarRatExtractor
@@ -31,6 +32,13 @@ def main(file_path):
         print("[*] Launching AsyncRAT Extractor...")
         extractor = AsyncRatExtractor(processed_file)
         result = extractor.extract()
+
+    elif "DcRAT_Generic" in matches or "VenomRAT_Generic" in matches:
+        print("[*] Launching AsyncRAT Extractor for DcRAT/VenomRAT...")
+        extractor = AsyncRatExtractor(processed_file)
+        result = extractor.extract()
+        if result:
+            result.family = "DcRAT/VenomRAT"
             
     elif "QuasarRAT_Generic" in matches:
         print("[*] Launching QuasarRAT Extractor...")
@@ -40,6 +48,9 @@ def main(file_path):
     if result:
         print("\n[+] Extraction Successful!")
         print(result.model_dump_json(indent=4))
+        
+        reporter = Reporter()
+        reporter.save(result, file_path)
     else:
         print("[-] Failed to extract configuration or extractor not built.")
 
